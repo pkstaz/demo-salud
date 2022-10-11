@@ -1,0 +1,27 @@
+{
+    "pid": {
+        "first_name": "JOHN",
+        "last_name": "DOE",
+        "birthday_date": "19480203",
+        "address": "254 MYSTREET AVE",
+        "city": "MYTOWN",
+        "country": "USA",
+        "state": "OH",
+        "phone": "(216)123-4567",
+        "genre": "M"
+    },
+    "msh": {
+        "processing_id": "D",
+        "message_type": "ADT",
+        "message_processing_id": "D",
+        "message_version_id": "2.5",
+        "message_trigger_event": "A04",
+        "sending_application": "EPIC",
+        "receiving_application": "SMS",
+        "message_control_id": "1817457",
+        "sending_facility": "EPICADT",
+        "receiving_facility": "SMSADT",
+        "message_timestamp": "199912271408"
+    },
+    "evn": {}
+}

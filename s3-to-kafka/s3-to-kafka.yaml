@@ -1,0 +1,28 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: s3-to-kafka
+spec:
+  flows:
+    - route:
+        from:
+          uri: aws2-s3://salud-hl7-demo
+          steps:
+            - log:
+                message: ${body}
+                loggingLevel: INFO
+            - to:
+                uri: kamelet:kafka-sink
+                parameters:
+                  topic: '{{kafka.topic.name}}'
+                  bootstrapServers: '{{kafka.bootstrap.server}}'
+                  user: '{{kafka.cliente.id}}'
+                  password: '{{kafka.client.secret}}'
+          parameters:
+            accessKey: "{{aws.access.key}}"
+            region: "{{aws.region}}"
+            secretKey: "{{aws.secret.key}}"
+  traits:
+    mount:
+      configs:
+        - 'secret:env-cfg-demo'

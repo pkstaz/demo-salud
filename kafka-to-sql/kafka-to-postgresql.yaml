@@ -1,0 +1,121 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: kafka-to-postgresql
+spec:
+  flows:
+    - route:
+        from:
+          uri: kamelet:kafka-source
+          steps:
+            - log:
+                message: 'From kafka topic: ${body}'
+                loggingLevel: INFO
+            - to:
+                uri: kamelet:http-sink
+                parameters:
+                  url: '{{rest.service.hl7.to.json.endpoint}}'
+                  method: POST
+            - log:
+                message: 'after call api: ${body}'
+                loggingLevel: INFO
+            - setHeader:
+                name: first_name
+                expression:
+                  jsonpath:
+                    expression: $.pid.first_name
+            - setHeader:
+                name: last_name
+                expression:
+                  jsonpath:
+                    expression: $.pid.last_name
+            - setHeader:
+                name: genre
+                expression:
+                  jsonpath:
+                    expression: $.pid.genre
+            - setHeader:
+                name: processing_id
+                expression:
+                  jsonpath:
+                    expression: $.msh.processing_id
+            - setHeader:
+                name: message_type
+                expression:
+                  jsonpath:
+                    expression: $.msh.message_type
+            - setHeader:
+                name: message_processing_id
+                expression:
+                  jsonpath:
+                    expression: $.msh.message_processing_id
+            - setHeader:
+                name: message_version_id
+                expression:
+                  jsonpath:
+                    expression: $.msh.message_version_id
+            - setHeader:
+                name: message_trigger_event
+                expression:
+                  jsonpath:
+                    expression: $.msh.message_trigger_event
+            - setHeader:
+                name: sending_application
+                expression:
+                  jsonpath:
+                    expression: $.msh.sending_application
+            - setHeader:
+                name: receiving_application
+                expression:
+                  jsonpath:
+                    expression: $.msh.receiving_application
+            - setHeader:
+                name: message_control_id
+                expression:
+                  jsonpath:
+                    expression: $.msh.message_control_id
+            - setHeader:
+                name: sending_facility
+                expression:
+                  jsonpath:
+                    expression: $.msh.sending_facility
+            - setHeader:
+                name: receiving_facility
+                expression:
+                  jsonpath:
+                    expression: $.msh.receiving_facility
+            - setHeader:
+                name: message_timestamp
+                expression:
+                  jsonpath:
+                    expression: $.msh.message_timestamp
+            - to:
+                uri: kamelet:postgresql-sink
+                parameters:
+                  serverName: '{{postgresql.hl7.serverName}}'
+                  serverPort: '{{postgresql.hl7.serverPort}}'
+                  username: '{{postgresql.hl7.username}}'
+                  password: '{{postgresql.hl7.password}}'
+                  databaseName: '{{postgresql.hl7.databaseName}}'
+                  query: >-
+                    insert into hl7_message (first_name, last_name, genre,
+                    processing_id, message_type, message_processing_id,
+                    message_version_id, message_trigger_event,
+                    sending_application, receiving_application,
+                    message_control_id, sending_facility, receiving_facility,
+                    message_timestamp) values (:#first_name, :#last_name,
+                    :#genre, :#processing_id, :#message_type,
+                    :#message_processing_id, :#message_version_id,
+                    :#message_trigger_event, :#sending_application,
+                    :#receiving_application, :#message_control_id,
+                    :#sending_facility, :#receiving_facility,
+                    :#message_timestamp);
+          parameters:
+            topic: '{{kafka.topic.name}}'
+            bootstrapServers: '{{kafka.bootstrap.server}}'
+            user: '{{kafka.cliente.id}}'
+            password: '{{kafka.client.secret}}'
+  traits:
+    mount:
+      configs:
+        - 'secret:env-cfg-demo'

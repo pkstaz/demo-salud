@@ -1,0 +1,43 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: kafka-to-mongodb
+spec:
+  flows:
+    - route:
+        from:
+          uri: kamelet:kafka-source
+          steps:
+            - log:
+                message: body from kafka ${body}
+                loggingLevel: INFO
+            - to:
+                uri: kamelet:http-sink
+                parameters:
+                  method: POST
+                  url: '{{rest.service.hl7.to.json.endpoint}}'
+            - unmarshal:
+                json:
+                  library: fastjson
+                  prettyPrint: true
+            - log:
+                message: body from api call ${body}
+                loggingLevel: INFO
+            - to:
+                uri: kamelet:mongodb-sink
+                parameters:
+                  hosts: '{{mongodb.hl7.host}}'
+                  collection: '{{mongodb.hl7.collection}}'
+                  password: '{{mongodb.hl7.password}}'
+                  username: '{{mongodb.hl7.username}}'
+                  database: '{{mongodb.hl7.database}}'
+                  createCollection: true
+          parameters:
+            topic: '{{kafka.topic.name}}'
+            bootstrapServers: '{{kafka.bootstrap.server}}'
+            user: '{{kafka.cliente.id}}'
+            password: '{{kafka.client.secret}}'
+  traits:
+    mount:
+      configs:
+        - 'secret:env-cfg-demo'
